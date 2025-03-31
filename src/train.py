@@ -1,19 +1,21 @@
 import torch
 from torch.utils.data import DataLoader
-import torch.optim as optim
 import torch.nn as nn
 
 
-def trainNN(model: nn.Module, train_loader: DataLoader, test_loader: DataLoader, loss_fn, optimizer, epochs=10, device=None, log_train=False, log_test=False):
+def trainNN(model: nn.Module, train_loader: DataLoader, test_loader: DataLoader, loss_fn, optimizer, epochs: int=10, device:torch.device=None, log_train:bool=False, log_test:bool=False):
     """
     Train the neural network model.
     Args:
-        model (torch.nn.Module): The neural network model.
-        train_loader (DataLoader): DataLoader for training data.
-        test_loader (DataLoader): DataLoader for testing data.
-        criterion (torch.nn.Module): Loss function.
-        optimizer (torch.optim.Optimizer): Optimizer.
+        model (torch.nn.Module): The neural network model to train.
+        train_loader (torch.utils.data.DataLoader): DataLoader for the training set.
+        test_loader (torch.utils.data.DataLoader): DataLoader for the test set.
+        loss_fn: Loss function to use for training.
+        optimizer: Optimizer to use for training.
         epochs (int, optional): Number of epochs to train. Defaults to 10.
+        device (torch.device, optional): Device to run the model on. Defaults to None.
+        log_train (bool, optional): Whether to log training progress. Defaults to False.
+        log_test (bool, optional): Whether to log testing progress. Defaults to False.
     """
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -49,11 +51,7 @@ def trainNN(model: nn.Module, train_loader: DataLoader, test_loader: DataLoader,
             print(f"Epoch [{epoch+1}/{epochs}], Loss: {epoch_loss/len(train_loader):.4f}, Accuracy: {100 * correct / total:.2f}%")
         # Test the model
         model.eval()
-        test_loss = 0
-        correct = 0
-        total = 0
         correct, total, test_loss = evaluate_model(model, test_loader, loss_fn, device)
-
         test_losses.append(test_loss / len(test_loader))
         test_accuracies.append(correct / total)
         if log_test:
@@ -61,9 +59,14 @@ def trainNN(model: nn.Module, train_loader: DataLoader, test_loader: DataLoader,
 
     return model, train_losses, test_losses, train_accuracies, test_accuracies
 
-def evaluate_model(model: nn.Module, test_loader: DataLoader, loss_fn, device):
+def evaluate_model(model: nn.Module, test_loader: DataLoader, loss_fn, device: torch.device):
     """
     Evaluate the model on the test set.
+    Args:
+        model (torch.nn.Module): The neural network model to evaluate.
+        test_loader (torch.utils.data.DataLoader): DataLoader for the test set.
+        loss_fn: Loss function to use for evaluation.
+        device (torch.device): Device to run the model on.
     """
     model.eval()
     test_loss = 0
