@@ -19,7 +19,7 @@ def trainNN(model: nn.Module, train_loader: DataLoader, test_loader: DataLoader,
     """
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     model.to(device)
 
     train_losses = []
@@ -29,9 +29,6 @@ def trainNN(model: nn.Module, train_loader: DataLoader, test_loader: DataLoader,
 
     for epoch in range(epochs):
         model.train()
-        epoch_loss = 0
-        correct = 0
-        total = 0
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
@@ -40,16 +37,14 @@ def trainNN(model: nn.Module, train_loader: DataLoader, test_loader: DataLoader,
             loss.backward()
             optimizer.step()
 
-            epoch_loss += loss.item()
-            _, predicted = torch.max(output.data, 1)
-            total += target.size(0)
-            correct += (predicted == target).sum().item()
-
-        train_losses.append(epoch_loss / len(train_loader))
-        train_accuracies.append(correct / total)
+        correct_train, total_train, train_loss = evaluate_model(model, train_loader, loss_fn, device)
+        train_losses.append(train_loss / len(train_loader))
+        train_accuracies.append(correct_train / total_train)
         if log_train:
-            print(f"Epoch [{epoch+1}/{epochs}], Loss: {epoch_loss/len(train_loader):.4f}, Accuracy: {100 * correct / total:.2f}%")
-        # Test the model
+            print(
+                f"Epoch [{epoch+1}/{epochs}], Loss: {train_loss/len(train_loader):.4f}, Accuracy: {100 * correct_train / total_train:.2f}%"
+            )
+        
         model.eval()
         correct, total, test_loss = evaluate_model(model, test_loader, loss_fn, device)
         test_losses.append(test_loss / len(test_loader))
@@ -82,4 +77,3 @@ def evaluate_model(model: nn.Module, test_loader: DataLoader, loss_fn, device: t
             total += target.size(0)
             correct += (predicted == target).sum().item()
     return correct,total,test_loss
-        

@@ -13,6 +13,8 @@ def plot_images(images, labels):
         labels (list): List of labels corresponding to the images.
     """
     fig, axes = plt.subplots(1, len(images), figsize=(15, 15))
+    if len(images) <= 1:
+        axes = [axes]
     for ax, img, label in zip(axes, images, labels):
         ax.imshow(img.reshape(28, 28), cmap="gray")
         ax.set_title(label)
@@ -60,4 +62,34 @@ def analyze_predictions(model: Module, test_loader: DataLoader, device: torch.de
         for pred, true in zip(wrong_labels, correct_labels)
     ]
     plot_images(wrongly_predicted, labels)
+    plt.show()
+
+def plot_losses_accs(train_loss, test_loss, train_acc, test_acc):
+    """
+    Plot training and testing losses and accuracies.
+    Args:
+        train_loss (list): List of training losses.
+        test_loss (list): List of testing losses.
+        train_acc (list): List of training accuracies.
+        test_acc (list): List of testing accuracies.
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    # Plot losses
+    axes[0].plot(train_loss, label="Train Loss")
+    axes[0].plot(test_loss, label="Test Loss")
+    axes[0].set_title("Losses")
+    axes[0].set_xlabel("Epochs")
+    axes[0].set_ylabel("Loss")
+    axes[0].legend()
+
+    # Plot accuracies
+    axes[1].plot(train_acc, label="Train Accuracy")
+    axes[1].plot(test_acc, label="Test Accuracy")
+    axes[1].set_title("Accuracies")
+    axes[1].set_xlabel("Epochs")
+    axes[1].set_ylabel("Accuracy")
+    axes[1].legend()
+
+    plt.tight_layout()
     plt.show()
